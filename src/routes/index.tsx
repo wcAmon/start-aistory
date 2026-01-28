@@ -73,18 +73,57 @@ function HomePage() {
 
       {/* Queued State */}
       {appState === 'queued' && (
-        <div className="max-w-md mx-auto text-center">
+        <div className="max-w-lg mx-auto">
           <div className="brutalist-card p-8">
-            <Loader2 className="h-12 w-12 mx-auto text-primary animate-spin mb-4" />
-            <h2 className="text-xl font-bold mb-2">In Queue</h2>
-            <p className="text-muted-foreground mb-2">
-              Your video is waiting to be processed.
-            </p>
-            {queuePosition && (
-              <p className="text-primary font-medium">
-                Position in queue: #{queuePosition}
+            <div className="flex flex-col items-center text-center">
+              {/* Animated queue indicator */}
+              <div className="relative mb-6">
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                </div>
+                {queuePosition && queuePosition > 0 && (
+                  <div className="absolute -top-1 -right-1 w-7 h-7 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-bold text-sm">
+                    {queuePosition}
+                  </div>
+                )}
+              </div>
+
+              <h2 className="text-xl font-bold mb-2">Waiting in Queue</h2>
+              <p className="text-muted-foreground mb-4">
+                {queuePosition && queuePosition > 1
+                  ? `There ${queuePosition - 1 === 1 ? 'is' : 'are'} ${queuePosition - 1} video${queuePosition - 1 === 1 ? '' : 's'} ahead of yours.`
+                  : queuePosition === 1
+                    ? "You're next! Processing will begin shortly."
+                    : 'Your video will begin processing soon.'}
               </p>
-            )}
+
+              {/* Queue position display */}
+              {queuePosition && queuePosition > 0 && (
+                <div className="w-full bg-muted rounded-lg p-4 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Queue position</span>
+                    <span className="font-mono font-medium">#{queuePosition}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {[...Array(Math.min(queuePosition, 5))].map((_, i) => (
+                      <div
+                        key={i}
+                        className={`flex-1 h-1.5 rounded-full ${
+                          i === 0 ? 'bg-primary animate-pulse' : 'bg-muted-foreground/30'
+                        }`}
+                      />
+                    ))}
+                    {queuePosition > 5 && (
+                      <span className="text-xs text-muted-foreground">+{queuePosition - 5}</span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <p className="text-xs text-muted-foreground mt-4">
+                You can leave this page. We'll send a notification when your video is ready.
+              </p>
+            </div>
           </div>
         </div>
       )}
