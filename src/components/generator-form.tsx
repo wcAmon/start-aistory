@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Loader2, Sparkles, Film, Palette, Mic, AlignVerticalJustifyCenter } from 'lucide-react'
+import { Loader2, Sparkles, Film, Palette, Mic, AlignVerticalJustifyCenter, FlaskConical } from 'lucide-react'
 import type { CreateJobRequest } from '@/hooks'
 
 interface GeneratorFormProps {
@@ -25,6 +25,7 @@ export function GeneratorForm({ onSubmit, isLoading = false }: GeneratorFormProp
   const [style, setStyle] = useState<'cinematic' | 'anime'>('cinematic')
   const [voice, setVoice] = useState<'male' | 'female'>('male')
   const [subtitlePosition, setSubtitlePosition] = useState<'top' | 'middle' | 'bottom'>('bottom')
+  const [testMode, setTestMode] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,6 +37,7 @@ export function GeneratorForm({ onSubmit, isLoading = false }: GeneratorFormProp
       style,
       voice,
       subtitle_position: subtitlePosition,
+      test_mode: testMode,
     })
   }
 
@@ -145,6 +147,23 @@ export function GeneratorForm({ onSubmit, isLoading = false }: GeneratorFormProp
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* Test Mode */}
+          <div className="flex items-center gap-3 p-3 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/30">
+            <input
+              type="checkbox"
+              id="testMode"
+              checked={testMode}
+              onChange={(e) => setTestMode(e.target.checked)}
+              disabled={isLoading}
+              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            <Label htmlFor="testMode" className="flex items-center gap-2 cursor-pointer text-sm">
+              <FlaskConical className="h-4 w-4 text-orange-500" />
+              <span>Test Mode</span>
+              <span className="text-muted-foreground">(2 scenes only, faster)</span>
+            </Label>
           </div>
 
           {/* Submit Button */}
