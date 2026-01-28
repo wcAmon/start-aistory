@@ -6,8 +6,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { signInWithEmail, signUpWithEmail, signInWithGoogle } from '@/stores'
-import { Loader2, Mail, Chrome } from 'lucide-react'
+import { signInWithEmail, signUpWithEmail } from '@/stores'
+import { Loader2, Mail } from 'lucide-react'
 
 export function AuthForm() {
   const [isLoading, setIsLoading] = useState(false)
@@ -31,18 +31,6 @@ export function AuthForm() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Authentication failed')
     } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleGoogleSignIn = async () => {
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      await signInWithGoogle()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Google sign in failed')
       setIsLoading(false)
     }
   }
@@ -151,25 +139,6 @@ export function AuthForm() {
             </form>
           </TabsContent>
         </Tabs>
-
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-border" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-          </div>
-        </div>
-
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={handleGoogleSignIn}
-          disabled={isLoading}
-        >
-          <Chrome className="mr-2 h-4 w-4" />
-          Google
-        </Button>
       </CardContent>
     </Card>
   )

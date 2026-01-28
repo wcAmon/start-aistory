@@ -5,7 +5,6 @@ export {
   signInWithEmail,
   signUpWithEmail,
   signOut,
-  signInWithGoogle,
   type AuthState,
 } from './auth'
 
