@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { signInWithEmail, signUpWithEmail } from '@/stores'
+import { signUpSchema } from '@/lib/validation'
 import { Loader2, Mail } from 'lucide-react'
 
 export function AuthForm() {
@@ -24,6 +25,14 @@ export function AuthForm() {
 
     try {
       if (isSignUp) {
+        // Validate sign-up data
+        const result = signUpSchema.safeParse({ email, password })
+        if (!result.success) {
+          const firstError = result.error.errors[0]
+          setError(firstError.message)
+          setIsLoading(false)
+          return
+        }
         await signUpWithEmail(email, password)
       } else {
         await signInWithEmail(email, password)

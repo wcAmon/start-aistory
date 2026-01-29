@@ -32,12 +32,15 @@ export function AppHeader() {
               </Button>
 
               <div className="flex items-center gap-2 pl-2 border-l border-border">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Link
+                  to="/profile"
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
                   <User className="h-4 w-4" />
                   <span className="hidden md:inline truncate max-w-[150px]">
-                    {user.email}
+                    {user.user_metadata?.username || user.email}
                   </span>
-                </div>
+                </Link>
 
                 <Button
                   variant="ghost"

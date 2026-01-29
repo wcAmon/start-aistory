@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as JobsRouteImport } from './routes/jobs'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiJobsRouteImport } from './routes/api/jobs'
 import { Route as ApiJobsIdRouteImport } from './routes/api/jobs.$id'
 
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JobsRoute = JobsRouteImport.update({
   id: '/jobs',
   path: '/jobs',
@@ -38,12 +44,14 @@ const ApiJobsIdRoute = ApiJobsIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/jobs': typeof JobsRoute
+  '/profile': typeof ProfileRoute
   '/api/jobs': typeof ApiJobsRouteWithChildren
   '/api/jobs/$id': typeof ApiJobsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/jobs': typeof JobsRoute
+  '/profile': typeof ProfileRoute
   '/api/jobs': typeof ApiJobsRouteWithChildren
   '/api/jobs/$id': typeof ApiJobsIdRoute
 }
@@ -51,25 +59,34 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/jobs': typeof JobsRoute
+  '/profile': typeof ProfileRoute
   '/api/jobs': typeof ApiJobsRouteWithChildren
   '/api/jobs/$id': typeof ApiJobsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/jobs' | '/api/jobs' | '/api/jobs/$id'
+  fullPaths: '/' | '/jobs' | '/profile' | '/api/jobs' | '/api/jobs/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/jobs' | '/api/jobs' | '/api/jobs/$id'
-  id: '__root__' | '/' | '/jobs' | '/api/jobs' | '/api/jobs/$id'
+  to: '/' | '/jobs' | '/profile' | '/api/jobs' | '/api/jobs/$id'
+  id: '__root__' | '/' | '/jobs' | '/profile' | '/api/jobs' | '/api/jobs/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   JobsRoute: typeof JobsRoute
+  ProfileRoute: typeof ProfileRoute
   ApiJobsRoute: typeof ApiJobsRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/jobs': {
       id: '/jobs'
       path: '/jobs'
@@ -115,6 +132,7 @@ const ApiJobsRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   JobsRoute: JobsRoute,
+  ProfileRoute: ProfileRoute,
   ApiJobsRoute: ApiJobsRouteWithChildren,
 }
 export const routeTree = rootRouteImport

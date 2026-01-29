@@ -80,3 +80,26 @@ export async function signOut() {
   const { error } = await supabase.auth.signOut()
   if (error) throw error
 }
+
+export async function updateUserProfile(data: { username?: string }) {
+  const { data: result, error } = await supabase.auth.updateUser({
+    data: { username: data.username },
+  })
+  if (error) throw error
+
+  // Update local store
+  authStore.setState((state) => ({
+    ...state,
+    user: result.user,
+  }))
+
+  return result
+}
+
+export async function updateUserPassword(newPassword: string) {
+  const { data, error } = await supabase.auth.updateUser({
+    password: newPassword,
+  })
+  if (error) throw error
+  return data
+}

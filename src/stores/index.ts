@@ -5,6 +5,8 @@ export {
   signInWithEmail,
   signUpWithEmail,
   signOut,
+  updateUserProfile,
+  updateUserPassword,
   type AuthState,
 } from './auth'
 
