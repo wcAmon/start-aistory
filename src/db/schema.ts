@@ -1,4 +1,4 @@
-import { pgSchema, uuid, text, boolean, timestamp, jsonb } from 'drizzle-orm/pg-core'
+import { pgSchema, uuid, text, boolean, timestamp, jsonb, doublePrecision } from 'drizzle-orm/pg-core'
 
 // Custom schema for aistory tables
 export const aistorySchema = pgSchema('aistory')
@@ -26,6 +26,7 @@ export const jobs = aistorySchema.table('jobs', {
   videoTitle: text('video_title'),
   videoDescription: text('video_description'),
   videoHashtags: jsonb('video_hashtags').$type<string[]>(),
+  videoDuration: doublePrecision('video_duration'),  // Duration in seconds
 
   // Timestamps
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),

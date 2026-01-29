@@ -89,21 +89,12 @@ function formatStep(step: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
-function formatDuration(start: string, end: string): string {
-  const startDate = new Date(start)
-  const endDate = new Date(end)
-  const seconds = Math.round((endDate.getTime() - startDate.getTime()) / 1000)
+function formatVideoDuration(seconds: number): string {
+  const mins = Math.floor(seconds / 60)
+  const secs = Math.round(seconds % 60)
 
-  if (seconds < 60) return `${seconds}s`
-
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
-
-  if (minutes < 60) return `${minutes}m ${remainingSeconds}s`
-
-  const hours = Math.floor(minutes / 60)
-  const remainingMinutes = minutes % 60
-  return `${hours}h ${remainingMinutes}m`
+  if (mins === 0) return `${secs}s`
+  return `${mins}:${secs.toString().padStart(2, '0')}`
 }
 
 export function JobCard({ job }: JobCardProps) {
@@ -173,10 +164,10 @@ export function JobCard({ job }: JobCardProps) {
               </p>
             )}
 
-            {/* Duration */}
-            {job.completed_at && job.started_at && (
+            {/* Video Duration */}
+            {job.video_duration && (
               <p className="text-xs text-muted-foreground mt-2">
-                Duration: {formatDuration(job.started_at, job.completed_at)}
+                Duration: {formatVideoDuration(job.video_duration)}
               </p>
             )}
 

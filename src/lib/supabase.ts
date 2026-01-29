@@ -33,6 +33,7 @@ export interface Job {
   video_title: string | null
   video_description: string | null
   video_hashtags: string[] | null
+  video_duration: number | null  // Duration in seconds
   created_at: string
   updated_at: string
   started_at: string | null
