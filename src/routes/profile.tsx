@@ -90,7 +90,8 @@ function ProfilePage() {
     setPasswordError(null)
     setPasswordSuccess(false)
 
-    const formData = new FormData(e.currentTarget)
+    const form = e.currentTarget
+    const formData = new FormData(form)
     const newPassword = formData.get('newPassword') as string
     const confirmPassword = formData.get('confirmPassword') as string
 
@@ -108,7 +109,7 @@ function ProfilePage() {
       setTimeout(() => setPasswordSuccess(false), 3000)
 
       // Clear form
-      e.currentTarget.reset()
+      form.reset()
     } catch (err) {
       setPasswordError(err instanceof Error ? err.message : 'Failed to change password')
     } finally {
