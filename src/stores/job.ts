@@ -82,19 +82,28 @@ export function unsubscribeFromJob() {
   jobStore.setState((s) => ({ ...s, subscription: null, pollingInterval: null }))
 }
 
-// Polling fallback - fetch job status directly from database
+// Polling fallback - fetch job status via API route (more reliable with RLS)
 async function pollJobStatus(jobId: string) {
   try {
-    const { data, error } = await supabase
-      .from('jobs')
-      .select('*')
-      .eq('id', jobId)
-      .single()
-
-    if (error) {
-      console.error('[Polling] Error fetching job:', error)
+    // Get access token from supabase session
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.access_token) {
+      console.error('[Polling] No auth session')
       return
     }
+
+    const response = await fetch(`/api/jobs/${jobId}`, {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    })
+
+    if (!response.ok) {
+      console.error('[Polling] Error fetching job:', response.status)
+      return
+    }
+
+    const data = await response.json() as Job
 
     if (data) {
       const currentJob = jobStore.state.currentJob
@@ -104,7 +113,7 @@ async function pollJobStatus(jobId: string) {
           currentJob.current_step !== data.current_step ||
           JSON.stringify(currentJob.logs) !== JSON.stringify(data.logs)) {
         console.log('[Polling] Job updated:', { status: data.status, step: data.current_step })
-        updateJobState(data as Job)
+        updateJobState(data)
       }
 
       // Stop polling if job is complete or failed

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -13,9 +14,11 @@ import {
   Loader2,
   AlertCircle,
   Eye,
+  Trash2,
 } from 'lucide-react'
 import type { Job, JobStatus } from '@/lib/supabase'
 import { resumeJob } from '@/stores'
+import { useDeleteJob } from '@/hooks'
 
 interface JobCardProps {
   job: Job
@@ -105,6 +108,8 @@ function formatDuration(start: string, end: string): string {
 
 export function JobCard({ job }: JobCardProps) {
   const navigate = useNavigate()
+  const deleteJobMutation = useDeleteJob()
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const statusConfig = getStatusConfig(job.status)
   const StatusIcon = statusConfig.icon
 
@@ -112,6 +117,17 @@ export function JobCard({ job }: JobCardProps) {
     resumeJob(job)
     navigate({ to: '/' })
   }
+
+  const handleDelete = () => {
+    deleteJobMutation.mutate(job.id, {
+      onSuccess: () => {
+        setShowDeleteConfirm(false)
+      },
+    })
+  }
+
+  // Can't delete processing jobs
+  const canDelete = job.status !== 'processing'
 
   return (
     <Card className="bg-card border-border hover:border-primary/30 transition-colors">
@@ -163,6 +179,35 @@ export function JobCard({ job }: JobCardProps) {
                 Duration: {formatDuration(job.started_at, job.completed_at)}
               </p>
             )}
+
+            {/* Delete confirmation inline */}
+            {showDeleteConfirm && (
+              <div className="mt-3 p-3 bg-destructive/10 border border-destructive/30 rounded-lg">
+                <p className="text-sm text-destructive mb-2">Delete this job?</p>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={handleDelete}
+                    disabled={deleteJobMutation.isPending}
+                  >
+                    {deleteJobMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      'Delete'
+                    )}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={deleteJobMutation.isPending}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right: Actions */}
@@ -206,6 +251,18 @@ export function JobCard({ job }: JobCardProps) {
                   </a>
                 </Button>
               </>
+            )}
+
+            {/* Delete button */}
+            {canDelete && !showDeleteConfirm && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-muted-foreground hover:text-destructive"
+                onClick={() => setShowDeleteConfirm(true)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
             )}
           </div>
         </div>

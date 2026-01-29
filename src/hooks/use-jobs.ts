@@ -72,6 +72,24 @@ async function fetchJob(jobId: string, accessToken: string): Promise<Job> {
   return response.json()
 }
 
+// Delete a job
+async function deleteJob(jobId: string, accessToken: string): Promise<void> {
+  const response = await fetch(`/api/jobs/${jobId}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}))
+    throw new Error(error.error || 'Failed to delete job')
+  }
+}
+
+// Export fetchJob for use in polling
+export { fetchJob }
+
 // Hook: List user's jobs
 export function useJobs() {
   const session = useStore(authStore, (state) => state.session)
@@ -135,6 +153,26 @@ export function useCreateJob() {
     },
     onError: (error: Error) => {
       setError(error.message)
+    },
+  })
+}
+
+// Hook: Delete a job
+export function useDeleteJob() {
+  const queryClient = useQueryClient()
+  const session = useStore(authStore, (state) => state.session)
+
+  return useMutation({
+    mutationFn: async (jobId: string) => {
+      if (!session?.access_token) {
+        throw new Error('Not authenticated')
+      }
+      await deleteJob(jobId, session.access_token)
+      return jobId
+    },
+    onSuccess: () => {
+      // Invalidate jobs list to refresh
+      queryClient.invalidateQueries({ queryKey: ['jobs'] })
     },
   })
 }

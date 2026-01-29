@@ -89,6 +89,44 @@ export const Route = createFileRoute('/api/jobs/$id')({
           return Response.json({ error: 'Failed to fetch job' }, { status: 500 })
         }
       },
+
+      // DELETE /api/jobs/:id - Delete a job
+      DELETE: async ({ request, params }) => {
+        const auth = await verifyToken(request)
+        if (!auth) {
+          return Response.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
+        const { id } = params
+
+        try {
+          // Check job exists and belongs to user
+          const [job] = await db
+            .select()
+            .from(jobs)
+            .where(and(eq(jobs.id, id), eq(jobs.ownerId, auth.userId)))
+            .limit(1)
+
+          if (!job) {
+            return Response.json({ error: 'Job not found' }, { status: 404 })
+          }
+
+          // Don't allow deleting jobs that are still processing
+          if (job.status === 'processing') {
+            return Response.json({ error: 'Cannot delete a job that is still processing' }, { status: 400 })
+          }
+
+          // Delete the job
+          await db
+            .delete(jobs)
+            .where(and(eq(jobs.id, id), eq(jobs.ownerId, auth.userId)))
+
+          return Response.json({ success: true, message: 'Job deleted successfully' })
+        } catch (error) {
+          console.error('Failed to delete job:', error)
+          return Response.json({ error: 'Failed to delete job' }, { status: 500 })
+        }
+      },
     },
   },
 })
