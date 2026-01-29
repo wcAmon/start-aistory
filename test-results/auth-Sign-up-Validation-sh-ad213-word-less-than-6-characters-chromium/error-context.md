@@ -31,10 +31,11 @@
                   - text: test@example.com
               - generic [ref=e29]:
                 - generic [ref=e30]: Password
-                - textbox "Password" [active] [ref=e31]:
+                - textbox "Password" [ref=e31]:
                   - /placeholder: ••••••••
                   - text: "12345"
-              - button "Create Account" [ref=e32]:
+              - paragraph [ref=e32]: Cannot read properties of undefined (reading '0')
+              - button "Create Account" [active] [ref=e33]:
                 - img
                 - text: Create Account
 ```

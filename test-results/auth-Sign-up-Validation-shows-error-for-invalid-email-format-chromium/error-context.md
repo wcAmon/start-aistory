@@ -26,7 +26,7 @@
             - generic [ref=e25]:
               - generic [ref=e26]:
                 - generic [ref=e27]: Email
-                - textbox "Email" [active] [ref=e28]:
+                - textbox "Email" [ref=e28]:
                   - /placeholder: you@example.com
                   - text: invalid-email
               - generic [ref=e29]:
@@ -34,7 +34,8 @@
                 - textbox "Password" [ref=e31]:
                   - /placeholder: ••••••••
                   - text: password123
-              - button "Create Account" [ref=e32]:
+              - paragraph [ref=e32]: Cannot read properties of undefined (reading '0')
+              - button "Create Account" [active] [ref=e33]:
                 - img
                 - text: Create Account
 ```

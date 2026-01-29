@@ -68,7 +68,7 @@ function ProfilePage() {
       if (username) {
         const result = usernameSchema.safeParse(username)
         if (!result.success) {
-          setProfileError(result.error.errors[0].message)
+          setProfileError(result.error.issues[0].message)
           setIsUpdatingProfile(false)
           return
         }
@@ -98,7 +98,7 @@ function ProfilePage() {
       // Validate passwords
       const result = passwordChangeSchema.safeParse({ newPassword, confirmPassword })
       if (!result.success) {
-        setPasswordError(result.error.errors[0].message)
+        setPasswordError(result.error.issues[0].message)
         setIsUpdatingPassword(false)
         return
       }

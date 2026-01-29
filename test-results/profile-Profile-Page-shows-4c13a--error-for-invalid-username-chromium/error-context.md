@@ -14,10 +14,10 @@
           - img
           - generic [ref=e12]: History
         - generic [ref=e13]:
-          - link "test-invalid-1769681338077@test.example.com" [ref=e14] [cursor=pointer]:
+          - link "test-invalid-1769681624826@test.example.com" [ref=e14] [cursor=pointer]:
             - /url: /profile
             - img [ref=e15]
-            - generic [ref=e18]: test-invalid-1769681338077@test.example.com
+            - generic [ref=e18]: test-invalid-1769681624826@test.example.com
           - button [ref=e19]:
             - img
   - main [ref=e20]:
@@ -39,7 +39,7 @@
           - generic [ref=e36]:
             - generic [ref=e37]:
               - generic [ref=e38]: Email
-              - textbox "Email" [disabled]: test-invalid-1769681338077@test.example.com
+              - textbox "Email" [disabled]: test-invalid-1769681624826@test.example.com
               - paragraph [ref=e39]: Email cannot be changed
             - generic [ref=e40]:
               - generic [ref=e41]: Username
