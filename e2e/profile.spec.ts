@@ -120,7 +120,7 @@ test.describe('Profile Page', () => {
     await page.getByLabel('Confirm Password').fill('12345')
     await page.getByRole('button', { name: 'Change Password' }).click()
 
-    // Verify error message
-    await expect(page.getByText('Password must be at least 6 characters')).toBeVisible()
+    // Verify error message (use .nth(1) to get the error message, not the hint text)
+    await expect(page.locator('p.text-destructive').filter({ hasText: 'Password must be at least 6 characters' })).toBeVisible()
   })
 })
