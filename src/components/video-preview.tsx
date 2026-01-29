@@ -14,6 +14,7 @@ import {
   Share2,
   Sparkles,
   Hash,
+  Loader2,
 } from 'lucide-react'
 
 interface VideoPreviewProps {
@@ -32,6 +33,7 @@ export function VideoPreview({
   onCreateAnother,
 }: VideoPreviewProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null)
+  const [isDownloading, setIsDownloading] = useState(false)
 
   const copyToClipboard = async (text: string, field: string) => {
     await navigator.clipboard.writeText(text)
@@ -42,6 +44,27 @@ export function VideoPreview({
   const copyAll = async () => {
     const fullText = `${suggestedTitle}\n\n${suggestedDescription}\n\n${suggestedHashtags.map((t) => `#${t}`).join(' ')}`
     await copyToClipboard(fullText, 'all')
+  }
+
+  const handleDownload = async () => {
+    setIsDownloading(true)
+    try {
+      const response = await fetch(videoUrl)
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${suggestedTitle || 'video'}.mp4`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Download failed:', error)
+      window.open(videoUrl, '_blank')
+    } finally {
+      setIsDownloading(false)
+    }
   }
 
   return (
@@ -74,11 +97,18 @@ export function VideoPreview({
                   Watch Full Screen
                 </a>
               </Button>
-              <Button asChild variant="outline" className="flex-1">
-                <a href={videoUrl} download>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={handleDownload}
+                disabled={isDownloading}
+              >
+                {isDownloading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
                   <Download className="mr-2 h-4 w-4" />
-                  Download
-                </a>
+                )}
+                {isDownloading ? 'Downloading...' : 'Download'}
               </Button>
             </div>
           </CardContent>

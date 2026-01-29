@@ -101,6 +101,7 @@ export function JobCard({ job }: JobCardProps) {
   const navigate = useNavigate()
   const deleteJobMutation = useDeleteJob()
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isDownloading, setIsDownloading] = useState(false)
   const statusConfig = getStatusConfig(job.status)
   const StatusIcon = statusConfig.icon
 
@@ -115,6 +116,28 @@ export function JobCard({ job }: JobCardProps) {
         setShowDeleteConfirm(false)
       },
     })
+  }
+
+  const handleDownload = async () => {
+    if (!job.video_url) return
+    setIsDownloading(true)
+    try {
+      const response = await fetch(job.video_url)
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${job.video_title || 'video'}.mp4`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Download failed:', error)
+      window.open(job.video_url, '_blank')
+    } finally {
+      setIsDownloading(false)
+    }
   }
 
   // Can't delete processing jobs
@@ -236,10 +259,17 @@ export function JobCard({ job }: JobCardProps) {
                     Watch
                   </a>
                 </Button>
-                <Button asChild variant="ghost" size="sm">
-                  <a href={job.video_url} download>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDownload}
+                  disabled={isDownloading}
+                >
+                  {isDownloading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
                     <Download className="mr-1 h-4 w-4" />
-                  </a>
+                  )}
                 </Button>
               </>
             )}
