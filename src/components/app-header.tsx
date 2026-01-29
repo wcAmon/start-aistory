@@ -12,12 +12,12 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-sm">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 font-bold text-lg">
+        {/* Logo - clickable to go home */}
+        <Link to="/" className="flex items-center gap-2 font-bold text-lg hover:opacity-80 transition-opacity cursor-pointer">
           <div className="p-1.5 rounded-lg bg-primary">
             <Sparkles className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="hidden sm:inline">AI Shorts</span>
+          <span>AI Shorts</span>
         </Link>
 
         {/* Navigation */}

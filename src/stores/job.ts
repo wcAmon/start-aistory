@@ -34,6 +34,8 @@ export function subscribeToJob(jobId: string) {
   // Unsubscribe from previous subscription
   unsubscribeFromJob()
 
+  console.log('[Realtime] Subscribing to job:', jobId)
+
   const channel = supabase
     .channel(`job:${jobId}`)
     .on(
@@ -45,11 +47,14 @@ export function subscribeToJob(jobId: string) {
         filter: `id=eq.${jobId}`,
       },
       (payload) => {
+        console.log('[Realtime] Received update:', payload.new)
         const job = payload.new as Job
         updateJobState(job)
       }
     )
-    .subscribe()
+    .subscribe((status) => {
+      console.log('[Realtime] Subscription status:', status)
+    })
 
   jobStore.setState((state) => ({
     ...state,
@@ -87,6 +92,8 @@ function updateJobState(job: Job) {
       appState = 'error'
       break
   }
+
+  console.log('[JobStore] Updating state:', { status: job.status, appState, step: job.current_step })
 
   jobStore.setState((state) => ({
     ...state,
