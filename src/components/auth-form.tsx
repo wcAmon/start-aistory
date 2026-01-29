@@ -110,9 +110,8 @@ export function AuthForm() {
                 <Input
                   id="signup-email"
                   name="email"
-                  type="email"
+                  type="text"
                   placeholder="you@example.com"
-                  required
                   disabled={isLoading}
                 />
               </div>
@@ -123,8 +122,6 @@ export function AuthForm() {
                   name="password"
                   type="password"
                   placeholder="••••••••"
-                  minLength={6}
-                  required
                   disabled={isLoading}
                 />
               </div>
