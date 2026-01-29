@@ -17,6 +17,9 @@ export interface JobState {
 
   // Realtime subscription
   subscription: RealtimeChannel | null
+
+  // Polling fallback
+  pollingInterval: ReturnType<typeof setInterval> | null
 }
 
 export const jobStore = new Store<JobState>({
@@ -27,6 +30,7 @@ export const jobStore = new Store<JobState>({
   error: null,
   isSubmitting: false,
   subscription: null,
+  pollingInterval: null,
 })
 
 // Subscribe to job updates via Supabase Realtime
@@ -61,6 +65,9 @@ export function subscribeToJob(jobId: string) {
     currentJobId: jobId,
     subscription: channel,
   }))
+
+  // Also start polling as a fallback (Realtime may not work with RLS)
+  startPolling(jobId)
 }
 
 // Unsubscribe from job updates
@@ -68,8 +75,65 @@ export function unsubscribeFromJob() {
   const state = jobStore.state
   if (state.subscription) {
     supabase.removeChannel(state.subscription)
-    jobStore.setState((s) => ({ ...s, subscription: null }))
   }
+  if (state.pollingInterval) {
+    clearInterval(state.pollingInterval)
+  }
+  jobStore.setState((s) => ({ ...s, subscription: null, pollingInterval: null }))
+}
+
+// Polling fallback - fetch job status directly from database
+async function pollJobStatus(jobId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('jobs')
+      .select('*')
+      .eq('id', jobId)
+      .single()
+
+    if (error) {
+      console.error('[Polling] Error fetching job:', error)
+      return
+    }
+
+    if (data) {
+      const currentJob = jobStore.state.currentJob
+      // Only update if status or logs changed
+      if (!currentJob ||
+          currentJob.status !== data.status ||
+          currentJob.current_step !== data.current_step ||
+          JSON.stringify(currentJob.logs) !== JSON.stringify(data.logs)) {
+        console.log('[Polling] Job updated:', { status: data.status, step: data.current_step })
+        updateJobState(data as Job)
+      }
+
+      // Stop polling if job is complete or failed
+      if (data.status === 'completed' || data.status === 'failed' || data.status === 'cancelled') {
+        const state = jobStore.state
+        if (state.pollingInterval) {
+          clearInterval(state.pollingInterval)
+          jobStore.setState((s) => ({ ...s, pollingInterval: null }))
+        }
+      }
+    }
+  } catch (err) {
+    console.error('[Polling] Exception:', err)
+  }
+}
+
+// Start polling for job updates
+function startPolling(jobId: string) {
+  // Clear any existing polling
+  const state = jobStore.state
+  if (state.pollingInterval) {
+    clearInterval(state.pollingInterval)
+  }
+
+  // Poll immediately, then every 2 seconds
+  pollJobStatus(jobId)
+  const interval = setInterval(() => pollJobStatus(jobId), 2000)
+
+  jobStore.setState((s) => ({ ...s, pollingInterval: interval }))
 }
 
 // Update job state based on job data
@@ -144,6 +208,7 @@ export function resetJob() {
     error: null,
     isSubmitting: false,
     subscription: null,
+    pollingInterval: null,
   }))
 }
 
