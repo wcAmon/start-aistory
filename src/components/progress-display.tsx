@@ -15,20 +15,18 @@ import {
   Merge,
   Tags,
   Sparkles,
-  Eye,
   Camera,
   Upload,
 } from 'lucide-react'
 import type { LogEntry } from '@/lib/supabase'
 
-// Workflow steps in order - more detailed to match backend
+// Workflow steps in order - must match backend processor.py
 const WORKFLOW_STEPS = [
   { key: 'generate_script', label: 'Writing Script', icon: FileText, description: 'Creating your story' },
   { key: 'enhance_prompts', label: 'Enhancing Prompts', icon: Sparkles, description: 'Optimizing for shorts' },
   { key: 'generate_character', label: 'Creating Character', icon: Image, description: 'Designing character look' },
   { key: 'generate_images', label: 'Generating Images', icon: Image, description: 'Creating scene visuals' },
-  { key: 'validate_images', label: 'Validating Images', icon: Eye, description: 'Quality check' },
-  { key: 'review_video_prompts', label: 'Reviewing Prompts', icon: Camera, description: 'Preparing motion' },
+  { key: 'generate_video_prompts', label: 'Video Prompts', icon: Camera, description: 'Analyzing images for motion' },
   { key: 'generate_audio', label: 'Creating Voiceover', icon: Mic, description: 'Recording narration' },
   { key: 'generate_videos', label: 'Generating Videos', icon: Video, description: 'Creating video clips' },
   { key: 'add_subtitles', label: 'Adding Subtitles', icon: Type, description: 'Burning captions' },
