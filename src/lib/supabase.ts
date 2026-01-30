@@ -17,6 +17,35 @@ export const supabase = createClient(
 // Types for job status
 export type JobStatus = 'pending' | 'queued' | 'processing' | 'completed' | 'failed' | 'cancelled'
 
+export interface TitleVariant {
+  style: 'story' | 'clickbait' | 'question' | 'emotional'
+  text: string
+}
+
+export interface VideoMetadataExtended {
+  title: string
+  title_variants: TitleVariant[]
+  recommended_title_index: number
+  description: {
+    hook: string
+    body: string
+    call_to_action: string
+  }
+  full_description: string
+  hashtags: {
+    trending: string[]
+    niche: string[]
+    branded: string[]
+  }
+  all_hashtags: string[]
+  thumbnail_text_suggestions: string[]
+  virality_analysis: {
+    estimated_score: number
+    strengths: string[]
+    hook_effectiveness: string
+  }
+}
+
 export interface Job {
   id: string
   owner_id: string
@@ -33,7 +62,9 @@ export interface Job {
   video_title: string | null
   video_description: string | null
   video_hashtags: string[] | null
-  video_duration: number | null  // Duration in seconds
+  video_duration: number | null
+  generation_time: number | null
+  video_metadata_extended: VideoMetadataExtended | null
   created_at: string
   updated_at: string
   started_at: string | null

@@ -26,7 +26,9 @@ export const jobs = aistorySchema.table('jobs', {
   videoTitle: text('video_title'),
   videoDescription: text('video_description'),
   videoHashtags: jsonb('video_hashtags').$type<string[]>(),
-  videoDuration: doublePrecision('video_duration'),  // Duration in seconds
+  videoDuration: doublePrecision('video_duration'),
+  generationTime: doublePrecision('generation_time'),
+  videoMetadataExtended: jsonb('video_metadata_extended'),
 
   // Timestamps
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),

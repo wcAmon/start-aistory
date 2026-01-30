@@ -19,11 +19,16 @@ export function useJobState() {
   // Derive completionData from currentJob (reactive)
   const completionData = useMemo(() => {
     if (!currentJob || currentJob.status !== 'completed') return null
+    const extended = currentJob.video_metadata_extended
     return {
       videoUrl: currentJob.video_url ?? '',
       suggestedTitle: currentJob.video_title ?? '',
       suggestedDescription: currentJob.video_description ?? '',
       suggestedHashtags: currentJob.video_hashtags ?? [],
+      titleVariants: extended?.title_variants ?? [],
+      recommendedTitleIndex: extended?.recommended_title_index ?? 0,
+      viralityScore: extended?.virality_analysis?.estimated_score ?? null,
+      generationTime: currentJob.generation_time ?? null,
     }
   }, [currentJob])
 

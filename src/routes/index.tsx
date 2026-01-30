@@ -140,6 +140,10 @@ function HomePage() {
           suggestedTitle={completionData.suggestedTitle}
           suggestedDescription={completionData.suggestedDescription}
           suggestedHashtags={completionData.suggestedHashtags}
+          titleVariants={completionData.titleVariants}
+          recommendedTitleIndex={completionData.recommendedTitleIndex}
+          viralityScore={completionData.viralityScore}
+          generationTime={completionData.generationTime}
           onCreateAnother={handleCreateAnother}
         />
       )}

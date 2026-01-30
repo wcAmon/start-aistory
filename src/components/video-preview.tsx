@@ -15,14 +15,29 @@ import {
   Sparkles,
   Hash,
   Loader2,
+  Clock,
+  Star,
 } from 'lucide-react'
+import type { TitleVariant } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 
 interface VideoPreviewProps {
   videoUrl: string
   suggestedTitle: string
   suggestedDescription: string
   suggestedHashtags: string[]
+  titleVariants?: TitleVariant[]
+  recommendedTitleIndex?: number
+  viralityScore?: number | null
+  generationTime?: number | null
   onCreateAnother: () => void
+}
+
+const STYLE_LABELS: Record<TitleVariant['style'], string> = {
+  story: 'Story',
+  clickbait: 'Clickbait',
+  question: 'Question',
+  emotional: 'Emotional',
 }
 
 export function VideoPreview({
@@ -30,10 +45,20 @@ export function VideoPreview({
   suggestedTitle,
   suggestedDescription,
   suggestedHashtags,
+  titleVariants = [],
+  recommendedTitleIndex = 0,
+  viralityScore,
+  generationTime,
   onCreateAnother,
 }: VideoPreviewProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [isDownloading, setIsDownloading] = useState(false)
+  const [selectedTitleIndex, setSelectedTitleIndex] = useState(recommendedTitleIndex)
+
+  // Get current selected title
+  const currentTitle = titleVariants.length > 0
+    ? titleVariants[selectedTitleIndex]?.text ?? suggestedTitle
+    : suggestedTitle
 
   const copyToClipboard = async (text: string, field: string) => {
     await navigator.clipboard.writeText(text)
@@ -42,8 +67,14 @@ export function VideoPreview({
   }
 
   const copyAll = async () => {
-    const fullText = `${suggestedTitle}\n\n${suggestedDescription}\n\n${suggestedHashtags.map((t) => `#${t}`).join(' ')}`
+    const fullText = `${currentTitle}\n\n${suggestedDescription}\n\n${suggestedHashtags.map((t) => `#${t}`).join(' ')}`
     await copyToClipboard(fullText, 'all')
+  }
+
+  const formatGenerationTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = Math.floor(seconds % 60)
+    return `${mins}m ${secs}s`
   }
 
   const handleDownload = async () => {
@@ -89,6 +120,24 @@ export function VideoPreview({
               />
             </div>
 
+            {/* Stats Row */}
+            {(generationTime || viralityScore) && (
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                {generationTime && (
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-4 w-4" />
+                    <span>Generated in {formatGenerationTime(generationTime)}</span>
+                  </div>
+                )}
+                {viralityScore && (
+                  <div className="flex items-center gap-1">
+                    <Star className="h-4 w-4 text-yellow-500" />
+                    <span>Virality: {viralityScore}/100</span>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Action Buttons */}
             <div className="flex gap-2">
               <Button asChild className="flex-1 brutalist-shadow">
@@ -116,15 +165,17 @@ export function VideoPreview({
 
         {/* Metadata */}
         <div className="space-y-4">
-          {/* Title */}
+          {/* Title with Variants */}
           <Card className="bg-card border-border">
             <CardHeader className="py-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm text-muted-foreground">Suggested Title</CardTitle>
+                <CardTitle className="text-sm text-muted-foreground">
+                  {titleVariants.length > 0 ? 'Choose Your Title' : 'Suggested Title'}
+                </CardTitle>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => copyToClipboard(suggestedTitle, 'title')}
+                  onClick={() => copyToClipboard(currentTitle, 'title')}
                 >
                   {copiedField === 'title' ? (
                     <Check className="h-4 w-4 text-green-500" />
@@ -134,8 +185,41 @@ export function VideoPreview({
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="pt-0">
-              <p className="font-medium">{suggestedTitle}</p>
+            <CardContent className="pt-0 space-y-3">
+              {titleVariants.length > 0 ? (
+                <div className="space-y-2">
+                  {titleVariants.map((variant, index) => (
+                    <button
+                      key={variant.style}
+                      type="button"
+                      onClick={() => setSelectedTitleIndex(index)}
+                      className={cn(
+                        "w-full text-left p-3 rounded-lg border transition-all",
+                        selectedTitleIndex === index
+                          ? "border-primary bg-primary/5 ring-1 ring-primary"
+                          : "border-border hover:border-primary/50"
+                      )}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge
+                          variant={selectedTitleIndex === index ? "default" : "secondary"}
+                          className="text-xs"
+                        >
+                          {STYLE_LABELS[variant.style]}
+                        </Badge>
+                        {index === recommendedTitleIndex && (
+                          <Badge variant="outline" className="text-xs text-yellow-600 border-yellow-600">
+                            Recommended
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="font-medium text-sm">{variant.text}</p>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="font-medium">{suggestedTitle}</p>
+              )}
             </CardContent>
           </Card>
 
