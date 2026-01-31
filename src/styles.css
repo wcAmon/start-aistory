@@ -206,8 +206,13 @@ code {
 /* Ensure form inputs are clickable */
 .brutalist-card textarea,
 .brutalist-card input,
-.brutalist-card select,
-.brutalist-card button {
+.brutalist-card select {
+  position: relative;
+  z-index: 1;
+}
+
+/* Only apply to submit buttons, not icon buttons inside inputs */
+.brutalist-card button[type="submit"] {
   position: relative;
   z-index: 1;
 }
