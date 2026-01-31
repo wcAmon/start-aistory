@@ -90,7 +90,7 @@ export function AuthForm() {
                     type="button"
                     onClick={() => setShowSignInPassword(!showSignInPassword)}
                     className="text-muted-foreground hover:text-foreground"
-                    style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)' }}
+                    style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', zIndex: 10 }}
                     tabIndex={-1}
                   >
                     {showSignInPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -144,7 +144,7 @@ export function AuthForm() {
                     type="button"
                     onClick={() => setShowSignUpPassword(!showSignUpPassword)}
                     className="text-muted-foreground hover:text-foreground"
-                    style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)' }}
+                    style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', zIndex: 10 }}
                     tabIndex={-1}
                   >
                     {showSignUpPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
