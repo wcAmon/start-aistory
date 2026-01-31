@@ -127,6 +127,20 @@ export const Route = createFileRoute('/api/jobs/$id')({
 
               if (cancelResponse.ok) {
                 const result = await cancelResponse.json()
+
+                // If job is fully cancelled (not "cancelling"), safe to delete from DB
+                if (result.status === 'cancelled') {
+                  await db
+                    .delete(jobs)
+                    .where(and(eq(jobs.id, id), eq(jobs.ownerId, auth.userId)))
+                  return Response.json({
+                    success: true,
+                    message: 'Job cancelled and deleted',
+                    status: 'deleted',
+                  })
+                }
+
+                // If still "cancelling", worker is processing - don't delete yet
                 return Response.json({
                   success: true,
                   message: result.message,
