@@ -78,6 +78,8 @@ export const Route = createFileRoute('/api/jobs/$id')({
             video_description: job.videoDescription,
             video_hashtags: job.videoHashtags,
             video_duration: job.videoDuration,
+            generation_time: job.generationTime,
+            video_metadata_extended: job.videoMetadataExtended,
             created_at: job.createdAt?.toISOString(),
             updated_at: job.updatedAt?.toISOString(),
             started_at: job.startedAt?.toISOString(),
