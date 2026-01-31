@@ -15,7 +15,7 @@ export const supabase = createClient(
 )
 
 // Types for job status
-export type JobStatus = 'pending' | 'queued' | 'processing' | 'completed' | 'failed' | 'cancelled'
+export type JobStatus = 'pending' | 'queued' | 'processing' | 'cancelling' | 'completed' | 'failed' | 'cancelled'
 
 export interface TitleVariant {
   style: 'story' | 'clickbait' | 'question' | 'emotional'

@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 import type { Job, JobStatus } from '@/lib/supabase'
 import { resumeJob } from '@/stores'
-import { useDeleteJob } from '@/hooks'
+import { useDeleteJob, useCancelJob } from '@/hooks'
 
 interface JobCardProps {
   job: Job
@@ -40,6 +40,14 @@ function getStatusConfig(status: JobStatus) {
         label: 'Processing',
         variant: 'secondary' as const,
         className: 'bg-blue-500/10 text-blue-500 border-blue-500/30',
+        iconClassName: 'animate-spin',
+      }
+    case 'cancelling':
+      return {
+        icon: Loader2,
+        label: 'Cancelling',
+        variant: 'secondary' as const,
+        className: 'bg-orange-500/10 text-orange-500 border-orange-500/30',
         iconClassName: 'animate-spin',
       }
     case 'completed':
@@ -100,7 +108,9 @@ function formatVideoDuration(seconds: number): string {
 export function JobCard({ job }: JobCardProps) {
   const navigate = useNavigate()
   const deleteJobMutation = useDeleteJob()
+  const cancelJobMutation = useCancelJob()
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
   const statusConfig = getStatusConfig(job.status)
   const StatusIcon = statusConfig.icon
@@ -114,6 +124,14 @@ export function JobCard({ job }: JobCardProps) {
     deleteJobMutation.mutate(job.id, {
       onSuccess: () => {
         setShowDeleteConfirm(false)
+      },
+    })
+  }
+
+  const handleCancel = () => {
+    cancelJobMutation.mutate(job.id, {
+      onSuccess: () => {
+        setShowCancelConfirm(false)
       },
     })
   }
@@ -140,8 +158,9 @@ export function JobCard({ job }: JobCardProps) {
     }
   }
 
-  // Can't delete processing jobs
-  const canDelete = job.status !== 'processing'
+  // Can cancel queued/processing jobs, can delete terminal state jobs
+  const canCancel = job.status === 'queued' || job.status === 'processing'
+  const canDelete = job.status === 'completed' || job.status === 'failed' || job.status === 'cancelled'
 
   return (
     <Card className="bg-card border-border hover:border-primary/30 transition-colors">
@@ -173,10 +192,10 @@ export function JobCard({ job }: JobCardProps) {
               {job.idea}
             </p>
 
-            {/* Current step (if processing) */}
-            {job.status === 'processing' && job.current_step && (
+            {/* Current step (if processing or cancelling) */}
+            {(job.status === 'processing' || job.status === 'cancelling') && job.current_step && (
               <p className="text-sm text-secondary mt-2">
-                Current step: {formatStep(job.current_step)}
+                {job.status === 'cancelling' ? 'Stopping at: ' : 'Current step: '}{formatStep(job.current_step)}
               </p>
             )}
 
@@ -192,6 +211,35 @@ export function JobCard({ job }: JobCardProps) {
               <p className="text-xs text-muted-foreground mt-2">
                 Duration: {formatVideoDuration(job.video_duration)}
               </p>
+            )}
+
+            {/* Cancel confirmation inline */}
+            {showCancelConfirm && (
+              <div className="mt-3 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+                <p className="text-sm text-orange-500 mb-2">Cancel this job? It will stop at the next checkpoint.</p>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    className="bg-orange-500 hover:bg-orange-600 text-white"
+                    onClick={handleCancel}
+                    disabled={cancelJobMutation.isPending}
+                  >
+                    {cancelJobMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      'Cancel Job'
+                    )}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowCancelConfirm(false)}
+                    disabled={cancelJobMutation.isPending}
+                  >
+                    Keep Running
+                  </Button>
+                </div>
+              </div>
             )}
 
             {/* Delete confirmation inline */}
@@ -227,7 +275,7 @@ export function JobCard({ job }: JobCardProps) {
           {/* Right: Actions */}
           <div className="flex flex-col gap-2">
             {/* Track Progress button for active jobs */}
-            {(job.status === 'pending' || job.status === 'queued' || job.status === 'processing') && (
+            {(job.status === 'pending' || job.status === 'queued' || job.status === 'processing' || job.status === 'cancelling') && (
               <Button
                 size="sm"
                 className="brutalist-shadow"
@@ -235,6 +283,19 @@ export function JobCard({ job }: JobCardProps) {
               >
                 <Eye className="mr-1 h-4 w-4" />
                 Track
+              </Button>
+            )}
+
+            {/* Cancel button for active jobs */}
+            {canCancel && !showCancelConfirm && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-orange-500 border-orange-500/30 hover:bg-orange-500/10"
+                onClick={() => setShowCancelConfirm(true)}
+              >
+                <XCircle className="mr-1 h-4 w-4" />
+                Cancel
               </Button>
             )}
 

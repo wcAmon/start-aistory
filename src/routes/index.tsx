@@ -16,7 +16,7 @@ export const Route = createFileRoute('/')({
 
 function HomePage() {
   const { user, loading: authLoading } = useAuth()
-  const { appState, error, isSubmitting, logs, currentStep, completionData, queuePosition } = useJobState()
+  const { appState, error, isSubmitting, logs, currentStep, jobStatus, completionData, queuePosition, currentJobId } = useJobState()
   const createJobMutation = useCreateJob()
 
   const handleSubmit = (request: CreateJobRequest) => {
@@ -129,8 +129,13 @@ function HomePage() {
       )}
 
       {/* Generating State */}
-      {appState === 'generating' && (
-        <ProgressDisplay currentStep={currentStep} logs={logs} />
+      {appState === 'generating' && currentJobId && (
+        <ProgressDisplay
+          jobId={currentJobId}
+          currentStep={currentStep}
+          logs={logs}
+          jobStatus={jobStatus}
+        />
       )}
 
       {/* Complete State */}

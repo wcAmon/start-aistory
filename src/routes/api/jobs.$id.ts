@@ -93,7 +93,7 @@ export const Route = createFileRoute('/api/jobs/$id')({
         }
       },
 
-      // DELETE /api/jobs/:id - Delete a job
+      // DELETE /api/jobs/:id - Cancel or delete a job
       DELETE: async ({ request, params }) => {
         const auth = await verifyToken(request)
         if (!auth) {
@@ -101,6 +101,7 @@ export const Route = createFileRoute('/api/jobs/$id')({
         }
 
         const { id } = params
+        const apiServerUrl = process.env.API_SERVER_URL || 'http://localhost:8000'
 
         try {
           // Check job exists and belongs to user
@@ -114,12 +115,76 @@ export const Route = createFileRoute('/api/jobs/$id')({
             return Response.json({ error: 'Job not found' }, { status: 404 })
           }
 
-          // Don't allow deleting jobs that are still processing
-          if (job.status === 'processing') {
-            return Response.json({ error: 'Cannot delete a job that is still processing' }, { status: 400 })
+          // For active jobs (queued, processing, cancelling), send cancel to media-engine
+          if (job.status === 'queued' || job.status === 'processing' || job.status === 'cancelling') {
+            try {
+              const cancelResponse = await fetch(`${apiServerUrl}/api/jobs/${id}`, {
+                method: 'DELETE',
+                headers: {
+                  Authorization: request.headers.get('authorization') || '',
+                },
+              })
+
+              if (cancelResponse.ok) {
+                const result = await cancelResponse.json()
+                return Response.json({
+                  success: true,
+                  message: result.message,
+                  status: result.status,
+                })
+              }
+
+              // If media-engine returns 404, job may have finished - allow deletion
+              if (cancelResponse.status === 404) {
+                // Job not in media-engine, check current DB status and allow deletion
+                const [currentJob] = await db
+                  .select()
+                  .from(jobs)
+                  .where(and(eq(jobs.id, id), eq(jobs.ownerId, auth.userId)))
+                  .limit(1)
+
+                // If job is now in terminal state, allow deletion
+                if (currentJob && ['completed', 'failed', 'cancelled'].includes(currentJob.status)) {
+                  await db
+                    .delete(jobs)
+                    .where(and(eq(jobs.id, id), eq(jobs.ownerId, auth.userId)))
+                  return Response.json({ success: true, message: 'Job deleted successfully' })
+                }
+
+                // Otherwise, mark as cancelled since media-engine doesn't have it
+                await db
+                  .update(jobs)
+                  .set({ status: 'cancelled' })
+                  .where(and(eq(jobs.id, id), eq(jobs.ownerId, auth.userId)))
+                return Response.json({
+                  success: true,
+                  message: 'Job marked as cancelled (not found in processing queue)',
+                  status: 'cancelled',
+                })
+              }
+
+              // Other errors from media-engine
+              const errorData = await cancelResponse.json().catch(() => ({}))
+              return Response.json(
+                { error: errorData.detail || 'Failed to cancel job' },
+                { status: cancelResponse.status }
+              )
+            } catch (fetchError) {
+              console.error('Failed to contact media-engine:', fetchError)
+              // If media-engine is unreachable, still allow marking as cancelled
+              await db
+                .update(jobs)
+                .set({ status: 'cancelled' })
+                .where(and(eq(jobs.id, id), eq(jobs.ownerId, auth.userId)))
+              return Response.json({
+                success: true,
+                message: 'Job marked as cancelled (media-engine unreachable)',
+                status: 'cancelled',
+              })
+            }
           }
 
-          // Delete the job
+          // For terminal states (completed, failed, cancelled), delete directly
           await db
             .delete(jobs)
             .where(and(eq(jobs.id, id), eq(jobs.ownerId, auth.userId)))

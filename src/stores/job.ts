@@ -155,6 +155,7 @@ function updateJobState(job: Job) {
       appState = 'queued'
       break
     case 'processing':
+    case 'cancelling':
       appState = 'generating'
       break
     case 'completed':
@@ -231,6 +232,7 @@ export function resumeJob(job: Job) {
       appState = 'queued'
       break
     case 'processing':
+    case 'cancelling':
       appState = 'generating'
       break
     case 'completed':
@@ -253,7 +255,7 @@ export function resumeJob(job: Job) {
   }))
 
   // Subscribe to realtime updates if job is still active
-  if (job.status === 'pending' || job.status === 'queued' || job.status === 'processing') {
+  if (job.status === 'pending' || job.status === 'queued' || job.status === 'processing' || job.status === 'cancelling') {
     subscribeToJob(job.id)
   }
 }

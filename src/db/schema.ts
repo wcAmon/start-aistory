@@ -16,7 +16,7 @@ export const jobs = aistorySchema.table('jobs', {
   testMode: boolean('test_mode').default(false),
 
   // Status
-  status: text('status').notNull().default('pending').$type<'pending' | 'queued' | 'processing' | 'completed' | 'failed' | 'cancelled'>(),
+  status: text('status').notNull().default('pending').$type<'pending' | 'queued' | 'processing' | 'cancelling' | 'completed' | 'failed' | 'cancelled'>(),
   currentStep: text('current_step'),
   errorMessage: text('error_message'),
   logs: jsonb('logs').default([]).$type<LogEntry[]>(),

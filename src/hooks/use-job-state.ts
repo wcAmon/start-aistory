@@ -16,6 +16,9 @@ export function useJobState() {
   // Derive currentStep from currentJob (reactive)
   const currentStep = useMemo(() => currentJob?.current_step ?? '', [currentJob?.current_step])
 
+  // Derive jobStatus from currentJob (reactive)
+  const jobStatus = useMemo(() => currentJob?.status ?? 'pending', [currentJob?.status])
+
   // Derive completionData from currentJob (reactive)
   const completionData = useMemo(() => {
     if (!currentJob || currentJob.status !== 'completed') return null
@@ -41,6 +44,7 @@ export function useJobState() {
     isSubmitting,
     logs,
     currentStep,
+    jobStatus,
     completionData,
   }
 }

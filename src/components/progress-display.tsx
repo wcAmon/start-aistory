@@ -1,8 +1,10 @@
 'use client'
 
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import {
   Loader2,
@@ -17,8 +19,11 @@ import {
   Sparkles,
   Camera,
   Upload,
+  XCircle,
+  AlertTriangle,
 } from 'lucide-react'
-import type { LogEntry } from '@/lib/supabase'
+import type { LogEntry, JobStatus } from '@/lib/supabase'
+import { useCancelJob } from '@/hooks'
 
 // Workflow steps in order - must match backend processor.py
 const WORKFLOW_STEPS = [
@@ -36,8 +41,10 @@ const WORKFLOW_STEPS = [
 ] as const
 
 interface ProgressDisplayProps {
+  jobId: string
   currentStep: string
   logs: LogEntry[]
+  jobStatus: JobStatus
 }
 
 // Extract progress info from latest log for current step
@@ -62,7 +69,20 @@ function getStepMessage(logs: LogEntry[], step: string): string | null {
   return null
 }
 
-export function ProgressDisplay({ currentStep, logs }: ProgressDisplayProps) {
+export function ProgressDisplay({ jobId, currentStep, logs, jobStatus }: ProgressDisplayProps) {
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const cancelJobMutation = useCancelJob()
+  const isCancelling = jobStatus === 'cancelling'
+  const canCancel = jobStatus === 'processing' && !isCancelling
+
+  const handleCancel = () => {
+    cancelJobMutation.mutate(jobId, {
+      onSuccess: () => {
+        setShowCancelConfirm(false)
+      },
+    })
+  }
+
   // Calculate progress percentage with sub-step consideration
   const currentStepIndex = WORKFLOW_STEPS.findIndex((s) => s.key === currentStep)
   const stepProgress = getStepProgress(logs, currentStep)
@@ -102,11 +122,70 @@ export function ProgressDisplay({ currentStep, logs }: ProgressDisplayProps) {
       <Card className="brutalist-card overflow-hidden">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Generating Your Video</CardTitle>
-            <Badge variant="secondary" className="font-mono">
-              {formatTime(elapsedSeconds)}
-            </Badge>
+            <CardTitle className="text-lg flex items-center gap-2">
+              {isCancelling ? (
+                <>
+                  <AlertTriangle className="h-5 w-5 text-orange-500" />
+                  <span className="text-orange-500">Cancelling...</span>
+                </>
+              ) : (
+                'Generating Your Video'
+              )}
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="font-mono">
+                {formatTime(elapsedSeconds)}
+              </Badge>
+              {canCancel && !showCancelConfirm && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-orange-500 border-orange-500/30 hover:bg-orange-500/10"
+                  onClick={() => setShowCancelConfirm(true)}
+                >
+                  <XCircle className="mr-1 h-4 w-4" />
+                  Cancel
+                </Button>
+              )}
+            </div>
           </div>
+          {/* Cancel confirmation */}
+          {showCancelConfirm && (
+            <div className="mt-3 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+              <p className="text-sm text-orange-500 mb-2">Cancel this job? It will stop at the next checkpoint.</p>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  className="bg-orange-500 hover:bg-orange-600 text-white"
+                  onClick={handleCancel}
+                  disabled={cancelJobMutation.isPending}
+                >
+                  {cancelJobMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    'Cancel Job'
+                  )}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowCancelConfirm(false)}
+                  disabled={cancelJobMutation.isPending}
+                >
+                  Keep Running
+                </Button>
+              </div>
+            </div>
+          )}
+          {/* Cancelling notice */}
+          {isCancelling && (
+            <div className="mt-3 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+              <p className="text-sm text-orange-500">
+                <Loader2 className="inline h-4 w-4 animate-spin mr-2" />
+                Stopping at next checkpoint... Please wait.
+              </p>
+            </div>
+          )}
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Progress Bar */}

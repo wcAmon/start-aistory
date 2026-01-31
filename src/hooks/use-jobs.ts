@@ -87,6 +87,29 @@ async function deleteJob(jobId: string, accessToken: string): Promise<void> {
   }
 }
 
+// Cancel a job (returns status info)
+export interface CancelJobResponse {
+  success: boolean
+  message: string
+  status?: string
+}
+
+async function cancelJob(jobId: string, accessToken: string): Promise<CancelJobResponse> {
+  const response = await fetch(`/api/jobs/${jobId}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}))
+    throw new Error(error.error || 'Failed to cancel job')
+  }
+
+  return response.json()
+}
+
 // Export fetchJob for use in polling
 export { fetchJob }
 
@@ -172,6 +195,25 @@ export function useDeleteJob() {
     },
     onSuccess: () => {
       // Invalidate jobs list to refresh
+      queryClient.invalidateQueries({ queryKey: ['jobs'] })
+    },
+  })
+}
+
+// Hook: Cancel a job (for active jobs - queued/processing)
+export function useCancelJob() {
+  const queryClient = useQueryClient()
+  const session = useStore(authStore, (state) => state.session)
+
+  return useMutation({
+    mutationFn: async (jobId: string) => {
+      if (!session?.access_token) {
+        throw new Error('Not authenticated')
+      }
+      return cancelJob(jobId, session.access_token)
+    },
+    onSuccess: () => {
+      // Invalidate jobs list and current job to refresh
       queryClient.invalidateQueries({ queryKey: ['jobs'] })
     },
   })
