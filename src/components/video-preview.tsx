@@ -115,7 +115,7 @@ export function VideoPreview({
               <video
                 src={videoUrl}
                 controls
-                className="absolute inset-0 w-full h-full object-contain bg-black"
+                className="absolute inset-0 w-full h-full object-cover"
                 poster=""
               />
             </div>
