@@ -6,8 +6,8 @@ import type { Job } from '@/lib/supabase'
 export interface CreateJobRequest {
   idea: string
   style: 'cinematic' | 'anime'
-  voice: 'male' | 'female'
-  subtitle_position: 'top' | 'middle' | 'bottom'
+  image_engine: 'openai' | 'nano-banana'
+  language_engine: 'gpt' | 'gemini'
   test_mode?: boolean
 }
 

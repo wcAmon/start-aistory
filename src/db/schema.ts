@@ -11,9 +11,12 @@ export const jobs = aistorySchema.table('jobs', {
   // Input
   idea: text('idea').notNull(),
   style: text('style').notNull().$type<'cinematic' | 'anime'>(),
-  voice: text('voice').notNull().$type<'male' | 'female'>(),
-  subtitlePosition: text('subtitle_position').notNull().$type<'top' | 'middle' | 'bottom'>(),
+  imageEngine: text('image_engine').$type<'openai' | 'nano-banana'>().default('openai'),
+  languageEngine: text('language_engine').$type<'gpt' | 'gemini'>().default('gpt'),
   testMode: boolean('test_mode').default(false),
+  // Kept for backward compatibility with existing rows
+  voice: text('voice').$type<'male' | 'female'>().default('male'),
+  subtitlePosition: text('subtitle_position').$type<'top' | 'middle' | 'bottom'>().default('bottom'),
 
   // Status
   status: text('status').notNull().default('pending').$type<'pending' | 'queued' | 'processing' | 'cancelling' | 'completed' | 'failed' | 'cancelled'>(),

@@ -51,9 +51,12 @@ export interface Job {
   owner_id: string
   idea: string
   style: 'cinematic' | 'anime'
-  voice: 'male' | 'female'
-  subtitle_position: 'top' | 'middle' | 'bottom'
+  image_engine: 'openai' | 'nano-banana'
+  language_engine: 'gpt' | 'gemini'
   test_mode: boolean
+  // Kept for backward compatibility
+  voice?: 'male' | 'female' | null
+  subtitle_position?: 'top' | 'middle' | 'bottom' | null
   status: JobStatus
   current_step: string | null
   error_message: string | null

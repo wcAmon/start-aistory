@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Loader2, Sparkles, Film, Palette, Mic, AlignVerticalJustifyCenter, FlaskConical } from 'lucide-react'
+import { Loader2, Sparkles, Film, Palette, Image, Brain, FlaskConical } from 'lucide-react'
 import type { CreateJobRequest } from '@/hooks'
 
 interface GeneratorFormProps {
@@ -23,8 +23,8 @@ interface GeneratorFormProps {
 export function GeneratorForm({ onSubmit, isLoading = false }: GeneratorFormProps) {
   const [idea, setIdea] = useState('')
   const [style, setStyle] = useState<'cinematic' | 'anime'>('cinematic')
-  const [voice, setVoice] = useState<'male' | 'female'>('male')
-  const [subtitlePosition, setSubtitlePosition] = useState<'top' | 'middle' | 'bottom'>('bottom')
+  const [imageEngine, setImageEngine] = useState<'openai' | 'nano-banana'>('openai')
+  const [languageEngine, setLanguageEngine] = useState<'gpt' | 'gemini'>('gpt')
   const [testMode, setTestMode] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -35,8 +35,8 @@ export function GeneratorForm({ onSubmit, isLoading = false }: GeneratorFormProp
     onSubmit({
       idea: idea.trim(),
       style,
-      voice,
-      subtitle_position: subtitlePosition,
+      image_engine: imageEngine,
+      language_engine: languageEngine,
       test_mode: testMode,
     })
   }
@@ -105,45 +105,44 @@ export function GeneratorForm({ onSubmit, isLoading = false }: GeneratorFormProp
               </Select>
             </div>
 
-            {/* Voice */}
+            {/* Image Engine */}
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
-                <Mic className="h-4 w-4 text-secondary" />
-                Voice
+                <Image className="h-4 w-4 text-secondary" />
+                Image Engine
               </Label>
               <Select
-                value={voice}
-                onValueChange={(v) => setVoice(v as 'male' | 'female')}
+                value={imageEngine}
+                onValueChange={(v) => setImageEngine(v as 'openai' | 'nano-banana')}
                 disabled={isLoading}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="male">Male</SelectItem>
-                  <SelectItem value="female">Female</SelectItem>
+                  <SelectItem value="openai">OpenAI GPT Image</SelectItem>
+                  <SelectItem value="nano-banana">Nano Banana</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Subtitle Position */}
+            {/* Language Engine */}
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
-                <AlignVerticalJustifyCenter className="h-4 w-4 text-secondary" />
-                Subtitles
+                <Brain className="h-4 w-4 text-secondary" />
+                Language Engine
               </Label>
               <Select
-                value={subtitlePosition}
-                onValueChange={(v) => setSubtitlePosition(v as 'top' | 'middle' | 'bottom')}
+                value={languageEngine}
+                onValueChange={(v) => setLanguageEngine(v as 'gpt' | 'gemini')}
                 disabled={isLoading}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="top">Top</SelectItem>
-                  <SelectItem value="middle">Middle</SelectItem>
-                  <SelectItem value="bottom">Bottom</SelectItem>
+                  <SelectItem value="gpt">GPT</SelectItem>
+                  <SelectItem value="gemini">Gemini 3 Flash</SelectItem>
                 </SelectContent>
               </Select>
             </div>
