@@ -23,8 +23,8 @@ interface GeneratorFormProps {
 export function GeneratorForm({ onSubmit, isLoading = false }: GeneratorFormProps) {
   const [idea, setIdea] = useState('')
   const [style, setStyle] = useState<'cinematic' | 'anime'>('cinematic')
-  const [imageEngine, setImageEngine] = useState<'openai' | 'nano-banana'>('openai')
-  const [languageEngine, setLanguageEngine] = useState<'gpt' | 'gemini'>('gpt')
+  const [imageEngine, setImageEngine] = useState<'openai' | 'nano-banana'>('nano-banana')
+  const [languageEngine, setLanguageEngine] = useState<'gpt' | 'gemini'>('gemini')
   const [testMode, setTestMode] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {

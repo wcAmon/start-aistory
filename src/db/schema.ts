@@ -11,8 +11,8 @@ export const jobs = aistorySchema.table('jobs', {
   // Input
   idea: text('idea').notNull(),
   style: text('style').notNull().$type<'cinematic' | 'anime'>(),
-  imageEngine: text('image_engine').$type<'openai' | 'nano-banana'>().default('openai'),
-  languageEngine: text('language_engine').$type<'gpt' | 'gemini'>().default('gpt'),
+  imageEngine: text('image_engine').$type<'openai' | 'nano-banana'>().default('nano-banana'),
+  languageEngine: text('language_engine').$type<'gpt' | 'gemini'>().default('gemini'),
   testMode: boolean('test_mode').default(false),
   // Kept for backward compatibility with existing rows
   voice: text('voice').$type<'male' | 'female'>().default('male'),
