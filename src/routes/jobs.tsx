@@ -3,9 +3,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Loader2, AlertCircle, ArrowLeft, Video } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { AuthForm } from '@/components/auth-form'
 import { JobCard } from '@/components/job-card'
-import { useAuth } from '@/hooks'
 import { useJobs } from '@/hooks/use-jobs'
 
 export const Route = createFileRoute('/jobs')({
@@ -13,34 +11,7 @@ export const Route = createFileRoute('/jobs')({
 })
 
 function JobsPage() {
-  const { user, loading: authLoading } = useAuth()
   const { data: jobs, isLoading, error, refetch } = useJobs()
-
-  // Show loading while checking auth
-  if (authLoading) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      </div>
-    )
-  }
-
-  // Show auth form if not logged in
-  if (!user) {
-    return (
-      <div className="container mx-auto px-4 py-12">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-4">
-            AI <span className="text-primary">Shorts</span> Generator
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Sign in to view your video generation history.
-          </p>
-        </div>
-        <AuthForm />
-      </div>
-    )
-  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -56,10 +27,10 @@ function JobsPage() {
             </Button>
           </div>
           <h1 className="text-2xl font-bold">
-            Your <span className="text-primary">Videos</span>
+            All <span className="text-primary">Videos</span>
           </h1>
           <p className="text-muted-foreground">
-            View and manage your generated videos
+            View and manage generated videos
           </p>
         </div>
         <Button asChild className="brutalist-shadow">

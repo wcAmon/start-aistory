@@ -1,13 +1,12 @@
 'use client'
 
 import { createFileRoute } from '@tanstack/react-router'
-import { Loader2, AlertCircle, RefreshCw } from 'lucide-react'
+import { AlertCircle, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { AuthForm } from '@/components/auth-form'
 import { GeneratorForm } from '@/components/generator-form'
 import { ProgressDisplay } from '@/components/progress-display'
 import { VideoPreview } from '@/components/video-preview'
-import { useAuth, useJobState, useCreateJob, type CreateJobRequest } from '@/hooks'
+import { useJobState, useCreateJob, type CreateJobRequest } from '@/hooks'
 import { resetJob } from '@/stores'
 
 export const Route = createFileRoute('/')({
@@ -15,7 +14,6 @@ export const Route = createFileRoute('/')({
 })
 
 function HomePage() {
-  const { user, loading: authLoading } = useAuth()
   const { appState, error, isSubmitting, logs, currentStep, jobStatus, completionData, queuePosition, currentJobId } = useJobState()
   const createJobMutation = useCreateJob()
 
@@ -25,33 +23,6 @@ function HomePage() {
 
   const handleCreateAnother = () => {
     resetJob()
-  }
-
-  // Show loading while checking auth
-  if (authLoading) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      </div>
-    )
-  }
-
-  // Show auth form if not logged in
-  if (!user) {
-    return (
-      <div className="container mx-auto px-4 py-12">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-4">
-            AI <span className="text-primary">Shorts</span> Generator
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Create professional short videos with AI-generated scripts, cinematic visuals,
-            voiceover, and word-by-word subtitles. Ready for upload in one click.
-          </p>
-        </div>
-        <AuthForm />
-      </div>
-    )
   }
 
   return (
@@ -76,10 +47,9 @@ function HomePage() {
         <div className="max-w-lg mx-auto">
           <div className="brutalist-card p-8">
             <div className="flex flex-col items-center text-center">
-              {/* Animated queue indicator */}
               <div className="relative mb-6">
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                  <div className="h-8 w-8 text-primary animate-spin border-2 border-primary border-t-transparent rounded-full" />
                 </div>
                 {queuePosition && queuePosition > 0 && (
                   <div className="absolute -top-1 -right-1 w-7 h-7 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-bold text-sm">
@@ -97,7 +67,6 @@ function HomePage() {
                     : 'Your video will begin processing soon.'}
               </p>
 
-              {/* Queue position display */}
               {queuePosition && queuePosition > 0 && (
                 <div className="w-full bg-muted rounded-lg p-4 space-y-2">
                   <div className="flex justify-between text-sm">

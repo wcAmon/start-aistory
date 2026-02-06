@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import {
   HeadContent,
   Outlet,
@@ -9,7 +8,6 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 
 import { AppHeader } from '@/components/app-header'
-import { initAuth } from '@/stores'
 
 import TanStackQueryDevtools from '@/integrations/tanstack-query/devtools'
 
@@ -64,11 +62,6 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 })
 
 function RootComponent() {
-  // Initialize auth on mount
-  useEffect(() => {
-    initAuth()
-  }, [])
-
   return (
     <html lang="en" className="dark">
       <head>

@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useStore } from '@tanstack/react-store'
-import { authStore, startNewJob, setSubmitting, setError } from '@/stores'
+import { startNewJob, setSubmitting, setError } from '@/stores'
 import type { Job } from '@/lib/supabase'
 
 export interface CreateJobRequest {
@@ -18,12 +17,8 @@ export interface CreateJobResponse {
 }
 
 // Fetch jobs list
-async function fetchJobs(accessToken: string): Promise<Job[]> {
-  const response = await fetch('/api/jobs', {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  })
+async function fetchJobs(): Promise<Job[]> {
+  const response = await fetch('/api/jobs')
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}))
@@ -35,15 +30,11 @@ async function fetchJobs(accessToken: string): Promise<Job[]> {
 }
 
 // Create a new job
-async function createJob(
-  request: CreateJobRequest,
-  accessToken: string
-): Promise<CreateJobResponse> {
+async function createJob(request: CreateJobRequest): Promise<CreateJobResponse> {
   const response = await fetch('/api/jobs', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify(request),
   })
@@ -57,12 +48,8 @@ async function createJob(
 }
 
 // Fetch single job
-async function fetchJob(jobId: string, accessToken: string): Promise<Job> {
-  const response = await fetch(`/api/jobs/${jobId}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  })
+async function fetchJob(jobId: string): Promise<Job> {
+  const response = await fetch(`/api/jobs/${jobId}`)
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}))
@@ -73,12 +60,9 @@ async function fetchJob(jobId: string, accessToken: string): Promise<Job> {
 }
 
 // Delete a job
-async function deleteJob(jobId: string, accessToken: string): Promise<void> {
+async function deleteJob(jobId: string): Promise<void> {
   const response = await fetch(`/api/jobs/${jobId}`, {
     method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
   })
 
   if (!response.ok) {
@@ -94,12 +78,9 @@ export interface CancelJobResponse {
   status?: string
 }
 
-async function cancelJob(jobId: string, accessToken: string): Promise<CancelJobResponse> {
+async function cancelJob(jobId: string): Promise<CancelJobResponse> {
   const response = await fetch(`/api/jobs/${jobId}`, {
     method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
   })
 
   if (!response.ok) {
@@ -113,55 +94,38 @@ async function cancelJob(jobId: string, accessToken: string): Promise<CancelJobR
 // Export fetchJob for use in polling
 export { fetchJob }
 
-// Hook: List user's jobs
+// Hook: List all jobs
 export function useJobs() {
-  const session = useStore(authStore, (state) => state.session)
-
   return useQuery({
     queryKey: ['jobs'],
-    queryFn: () => {
-      if (!session?.access_token) {
-        throw new Error('Not authenticated')
-      }
-      return fetchJobs(session.access_token)
-    },
-    enabled: !!session?.access_token,
+    queryFn: () => fetchJobs(),
     staleTime: 30 * 1000, // 30 seconds
   })
 }
 
 // Hook: Get single job
 export function useJob(jobId: string | null) {
-  const session = useStore(authStore, (state) => state.session)
-
   return useQuery({
     queryKey: ['jobs', jobId],
     queryFn: () => {
-      if (!session?.access_token || !jobId) {
-        throw new Error('Not authenticated or no job ID')
-      }
-      return fetchJob(jobId, session.access_token)
+      if (!jobId) throw new Error('No job ID')
+      return fetchJob(jobId)
     },
-    enabled: !!session?.access_token && !!jobId,
+    enabled: !!jobId,
   })
 }
 
 // Hook: Create a new job
 export function useCreateJob() {
   const queryClient = useQueryClient()
-  const session = useStore(authStore, (state) => state.session)
 
   return useMutation({
     mutationFn: async (request: CreateJobRequest) => {
-      if (!session?.access_token) {
-        throw new Error('Not authenticated')
-      }
-
       setSubmitting(true)
       setError(null)
 
       try {
-        const result = await createJob(request, session.access_token)
+        const result = await createJob(request)
         return result
       } finally {
         setSubmitting(false)
@@ -183,18 +147,13 @@ export function useCreateJob() {
 // Hook: Delete a job
 export function useDeleteJob() {
   const queryClient = useQueryClient()
-  const session = useStore(authStore, (state) => state.session)
 
   return useMutation({
     mutationFn: async (jobId: string) => {
-      if (!session?.access_token) {
-        throw new Error('Not authenticated')
-      }
-      await deleteJob(jobId, session.access_token)
+      await deleteJob(jobId)
       return jobId
     },
     onSuccess: () => {
-      // Invalidate jobs list to refresh
       queryClient.invalidateQueries({ queryKey: ['jobs'] })
     },
   })
@@ -203,17 +162,12 @@ export function useDeleteJob() {
 // Hook: Cancel a job (for active jobs - queued/processing)
 export function useCancelJob() {
   const queryClient = useQueryClient()
-  const session = useStore(authStore, (state) => state.session)
 
   return useMutation({
     mutationFn: async (jobId: string) => {
-      if (!session?.access_token) {
-        throw new Error('Not authenticated')
-      }
-      return cancelJob(jobId, session.access_token)
+      return cancelJob(jobId)
     },
     onSuccess: () => {
-      // Invalidate jobs list and current job to refresh
       queryClient.invalidateQueries({ queryKey: ['jobs'] })
     },
   })

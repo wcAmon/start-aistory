@@ -6,7 +6,7 @@ export const aistorySchema = pgSchema('aistory')
 // Jobs table
 export const jobs = aistorySchema.table('jobs', {
   id: uuid('id').primaryKey().defaultRandom(),
-  ownerId: uuid('owner_id').notNull(),
+  ownerId: uuid('owner_id'),
 
   // Input
   idea: text('idea').notNull(),

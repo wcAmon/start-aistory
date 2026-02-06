@@ -1,65 +1,23 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { desc, eq } from 'drizzle-orm'
+import { desc } from 'drizzle-orm'
 import { db } from '@/db'
 import { jobs } from '@/db/schema'
-
-// Helper to verify Supabase JWT token
-async function verifyToken(request: Request): Promise<{ userId: string } | null> {
-  const authHeader = request.headers.get('authorization')
-  if (!authHeader?.startsWith('Bearer ')) {
-    return null
-  }
-
-  const token = authHeader.slice(7)
-  const supabaseUrl = process.env.VITE_SUPABASE_URL
-  const supabaseKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY
-
-  if (!supabaseUrl || !supabaseKey) {
-    console.error('Missing Supabase configuration')
-    return null
-  }
-
-  try {
-    const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        apikey: supabaseKey,
-      },
-    })
-
-    if (!response.ok) {
-      return null
-    }
-
-    const user = await response.json()
-    return { userId: user.id }
-  } catch {
-    return null
-  }
-}
 
 export const Route = createFileRoute('/api/jobs')({
   server: {
     handlers: {
-      // GET /api/jobs - List user's jobs
-      GET: async ({ request }) => {
-        const auth = await verifyToken(request)
-        if (!auth) {
-          return Response.json({ error: 'Unauthorized' }, { status: 401 })
-        }
-
+      // GET /api/jobs - List all jobs
+      GET: async () => {
         try {
-          const userJobs = await db
+          const allJobs = await db
             .select()
             .from(jobs)
-            .where(eq(jobs.ownerId, auth.userId))
             .orderBy(desc(jobs.createdAt))
             .limit(50)
 
           // Transform to snake_case for frontend compatibility
-          const transformedJobs = userJobs.map((job) => ({
+          const transformedJobs = allJobs.map((job) => ({
             id: job.id,
-            owner_id: job.ownerId,
             idea: job.idea,
             style: job.style,
             image_engine: job.imageEngine,
@@ -93,22 +51,16 @@ export const Route = createFileRoute('/api/jobs')({
 
       // POST /api/jobs - Create a new job (proxy to api-server)
       POST: async ({ request }) => {
-        const auth = await verifyToken(request)
-        if (!auth) {
-          return Response.json({ error: 'Unauthorized' }, { status: 401 })
-        }
-
         const apiServerUrl = process.env.API_SERVER_URL || 'http://localhost:8000'
 
         try {
           const body = await request.json()
 
-          // Proxy to api-server
+          // Proxy to api-server (no auth needed)
           const response = await fetch(`${apiServerUrl}/api/jobs`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: request.headers.get('authorization') || '',
             },
             body: JSON.stringify(body),
           })
